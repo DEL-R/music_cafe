@@ -1,5 +1,11 @@
 # Lofi Café – lecteur Lo‑Fi dans le navigateur
 
+[![Pages](https://github.com/DEL-R/music_cafe/actions/workflows/static.yml/badge.svg)](https://github.com/DEL-R/music_cafe/actions/workflows/static.yml)
+[![Release](https://img.shields.io/github/v/release/DEL-R/music_cafe?sort=semver)](https://github.com/DEL-R/music_cafe/releases)
+[![Site](https://img.shields.io/website?url=https%3A%2F%2Fdel-r.github.io%2Fmusic_cafe%2F)](https://del-r.github.io/music_cafe/)
+[![License](https://img.shields.io/github/license/DEL-R/music_cafe)](LICENSE)
+[![Issues](https://img.shields.io/github/issues/DEL-R/music_cafe)](https://github.com/DEL-R/music_cafe/issues)
+
 Un petit « café musical » statique : un fond animé, une horloge, un lecteur audio discret et un sélecteur de thèmes. Aucune installation ni backend — tout fonctionne dans votre navigateur.
 
 ## Sommaire

@@ -33,15 +33,23 @@ function applyTheme(theme) {
 
 function populateThemeSelector() {
   for (const theme of themes) {
+    /** @type {HTMLButtonElement} */
+    const themeButton = document.createElement('button');
+    themeButton.id = `${theme.meta.name}-theme-icon`;
+    themeButton.classList = "theme-icon"; // The button itself will be the icon
+    themeButton.setAttribute("aria-label", `Activer le thème ${theme.meta.name}`);
+    
     /** @type {SVGElement} */
     const themeIcon = htmlToElement(theme.meta.icon);
-    themeIcon.id = `${theme.meta.name}-theme-icon`;
-    themeIcon.classList = "theme-icon";
-    themeIcon.onclick = function(e) {
+    themeIcon.setAttribute('aria-hidden', 'true'); // Hide decorative icon from screen readers
+
+    themeButton.appendChild(themeIcon);
+    
+    themeButton.onclick = function(e) {
       e.stopPropagation(); // prevent triggering play/pause when selecting theme
       applyTheme(theme);
     }
-    themeSelector.appendChild(themeIcon);
+    themeSelector.appendChild(themeButton);
   }
 }
 

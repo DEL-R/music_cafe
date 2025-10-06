@@ -1,112 +1,103 @@
-// Define Elements and States
+function initializeUiControls() {
+    // Define Elements and States
+    const togglePlayButton = document.querySelector('#toggle-play-button');
+    const playerBar = document.querySelector('#player-bar');
+    const thumbnailImg = document.querySelector('#thumbnail-img');
+    const thumbnailTitle = document.querySelector('#thumbnail-title');
+    const thumbnailAuthor = document.querySelector('#thumbnail-author');
+    const authorLinkIcon = document.querySelector('#author-link-icon');
+    const thumbnailLink = document.querySelector('#thumbnail-link');
+    const thumbnailPreview = document.querySelector('#thumbnail-preview');
+    const skipToPrevButton = document.querySelector('#prev-button');
+    const skipToNextButton = document.querySelector('#next-button');
 
-/** @type {HTMLDivElement} */
-const togglePlayButton = document.querySelector('#toggle-play-button');
-/** @type {SVGElement} */
-const togglePlayIcon = togglePlayButton.firstElementChild;
-/** @type {SVGElement} */
-const loadingIcon = document.querySelector('#loading-icon');
-/** @type {SVGElement} */
-const togglePauseIcon = togglePlayButton.lastElementChild;
+    let thumbnailHideTimer;
 
-/** @type {SVGElement} */
-const skipToPrevButton = document.querySelector('#prev-button');
-/** @type {SVGElement} */
-const skipToNextButton = document.querySelector('#next-button');
+    // Register Listeners
+    togglePlayButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        controller();
+    });
 
-/** @type {HTMLInputElement} */
-const volumeSlider = document.querySelector('#volume-slider');
+    document.addEventListener('player-ready', function() {
+        console.log('%c[DEBUG] Event "player-ready" received.', 'color: green; font-weight: bold;');
+        volumeSlider.value = ytPlayer.getVolume();
+        updateSkipButtons();
+    });
 
-// Initial Setup
-updateTogglePlayButton(playing);
-updateSkipButtons(); // ensure initial UI state is correct
+    skipToNextButton.onclick = function(e) {
+        console.log('%c[DEBUG] Next button clicked.', 'color: cyan;');
+        e.stopPropagation();
+        playHistory.goToNext();
+    };
 
-// Register Listeners
-togglePlayButton.addEventListener('click', function(e) {
-  e.stopPropagation();
-  controller();
-});
+    skipToPrevButton.onclick = function(e) {
+        console.log('%c[DEBUG] Previous button clicked.', 'color: cyan;');
+        e.stopPropagation();
+        playHistory.goToPrev();
+    };
 
-player.addEventListener('play', function(e) {
-  updateTogglePlayButton(isPlaying = true);
-});
+    volumeSlider.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
 
-player.addEventListener('pause', function(e) {
-  updateTogglePlayButton(isPlaying = false);
-});
+    volumeSlider.addEventListener('change', function(e) {
+        if (ytPlayer && typeof ytPlayer.setVolume === 'function') {
+            ytPlayer.setVolume(e.target.value);
+        }
+    });
 
-player.addEventListener('volumechange', function(e) {
-  volumeSlider.value = Math.round(player.volume * 100);
-});
+    volumeSlider.addEventListener('input', function(e) {
+        const newVolumeValue = e.target.value;
+        if (ytPlayer && typeof ytPlayer.setVolume === 'function') {
+            ytPlayer.setVolume(newVolumeValue);
+            Preferences.savePreferences({ volume: newVolumeValue / 100 });
+        }
+        volumeLevel.innerText = `${newVolumeValue}%`;
+    });
 
-playHistory.onTracksChange = function() {
-  updateSkipButtons();
-};
+    volumeSlider.addEventListener('keydown', function(e) {
+        e.preventDefault();
+    });
 
-skipToNextButton.onclick = function(e) {
-  e.stopPropagation();
-  playing = true; // assume that playing started because skipped to next
-  playHistory.goToNext();
-};
+    function showThumbnail() {
+        clearTimeout(thumbnailHideTimer);
 
-skipToPrevButton.onclick = function(e) {
-  e.stopPropagation();
-  if (playHistory.currentIndex > 0) {
-    playHistory.goToPrev();
-  }
-};
+        if (playHistory.currentIndex >= 0 && window.song_list[playHistory.currentIndex]) {
+            const currentSong = window.song_list[playHistory.currentIndex];
+            const videoId = currentSong.id;
 
-player.addEventListener('loadstart', function(e) {
-  // prevent loading when controller hasnt even started
-  if (!controller_state) return;
-  loadingIcon.style.display = "block";
-  togglePlayIcon.style.display = "none";
-  togglePauseIcon.style.display = "none";
-});
+            thumbnailImg.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+            thumbnailTitle.textContent = currentSong.title;
+            thumbnailLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+            thumbnailAuthor.textContent = currentSong.author;
+            authorLinkIcon.href = currentSong.channelUrl;
+            thumbnailAuthor.style.display = 'block';
+            authorLinkIcon.style.display = 'block';
 
-player.addEventListener('loadedmetadata', function(e) {
-  loadingIcon.style.display = "none";
-  updateTogglePlayButton(true);
-});
+            thumbnailPreview.style.opacity = '1';
+            thumbnailPreview.style.visibility = 'visible';
+        }
+    }
 
-volumeSlider.addEventListener('click', function(e) {
-  e.stopPropagation();
-});
+    function hideThumbnail() {
+        thumbnailHideTimer = setTimeout(() => {
+            thumbnailPreview.style.opacity = '0';
+            thumbnailPreview.style.visibility = 'hidden';
+        }, 5000);
+    }
 
-volumeSlider.addEventListener('change', function(e) {
-  const volume = e.target.value / 100;
-  player.volume = volume;
-});
+    playerBar.addEventListener('mouseenter', showThumbnail);
+    playerBar.addEventListener('mouseleave', hideThumbnail);
 
-volumeSlider.addEventListener('input', function(e) {
-  volumeLevel.innerText = `${this.value}%`;
-});
+    thumbnailPreview.addEventListener('mouseenter', () => {
+        clearTimeout(thumbnailHideTimer);
+    });
+    thumbnailPreview.addEventListener('mouseleave', hideThumbnail);
 
-volumeSlider.addEventListener('keydown', function(e) {
-  e.preventDefault();
-});
-
-// Functions
-
-/**
- * Updates the toggle play button icon based on player state
- * @param {boolean} isPlaying 
- */
-function updateTogglePlayButton(isPlaying) {
-  togglePlayIcon.style.display = isPlaying ? "none" : "block";
-  togglePauseIcon.style.display = isPlaying ? "block" : "none";
-}
-
-/** Update the skip buttons disabled/enabled state */
-function updateSkipButtons() {
-  // Skip Next won't be disabled once the user clicks play once
-  if (playHistory.tracks.length > 0) {
-    skipToNextButton.classList = null;
-  }
-  // Skip Prev will only be enabled when there is a previous track
-  if (playHistory.currentIndex < 1) {
-    skipToPrevButton.classList = "disabled";
-  } else {
-    skipToPrevButton.classList = null;
-  }
+    function updateSkipButtons() {
+        console.log('%c[DEBUG] updateSkipButtons called. Enabling buttons.', 'color: yellow;');
+        skipToNextButton.classList.remove("disabled");
+        skipToPrevButton.classList.remove("disabled");
+    }
 }

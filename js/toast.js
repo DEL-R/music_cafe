@@ -1,51 +1,35 @@
-
-
 function ToastBuilder(options) {
-var opts = options || {};
+  const opts = options || {};
+  opts.defaultText = opts.defaultText || 'default text';
+  opts.displayTime = opts.displayTime || 3000;
+  opts.target = document.querySelector(opts.target || 'body');
 
-opts.defaultText = opts.defaultText || 'default text';
-opts.displayTime = opts.displayTime || 3000;
-opts.target = opts.target || 'body';
+  return function (text) {
+    const toast = document.createElement('div');
+    toast.classList.add('toast');
+    toast.innerHTML = text || opts.defaultText;
+    opts.target.prepend(toast);
 
-return function (text) {
-    $('<div/>')
-    .addClass('toast')
-    .prependTo($(opts.target))
-    .html(text || opts.defaultText)
-    .queue(function(next) {
-        $(this).css({
-        'opacity': 1
-        });
-        var topOffset = 15;
-        $('.toast').each(function() {
-        var $this = $(this);
-        var height = $this.outerHeight();
-        var offset = 15;
-        $this.css('top', topOffset + 'px');
-
-        topOffset += height + offset;
-        });
-        next();
-    })
-    .delay(opts.displayTime)
-    .queue(function(next) {
-        var $this = $(this);
-        var width = $this.outerWidth() + 20;
-        $this.css({
-        'right': '-' + width + 'px',
-        'opacity': 0
-        });
-        next();
-    })
-    .delay(600)
-    .queue(function(next) {
-        $(this).remove();
-        next();
+    // Position toasts
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      let topOffset = 15;
+      document.querySelectorAll('.toast').forEach(t => {
+        t.style.top = `${topOffset}px`;
+        topOffset += t.offsetHeight + 15;
+      });
     });
-};
-}
-  
 
+    // Hide and remove toast
+    setTimeout(() => {
+      toast.style.right = `-${toast.offsetWidth + 20}px`;
+      toast.style.opacity = '0';
+      setTimeout(() => {
+        toast.remove();
+      }, 600); // Wait for transition to finish
+    }, opts.displayTime);
+  };
+}
 
 // customize it with your own options
 var myOptions = {
@@ -59,12 +43,12 @@ const defaultmessage_list = [
     'Stay tuned for more updates and join the community: <a href="https://discord.gg/zNCjB9DJ9z" target="_blank">https://discord.gg/zNCjB9DJ9z</a> 🎶',
 ];
 
-var showtoast = new ToastBuilder(myOptions);
+const showtoast = new ToastBuilder(myOptions);
 
-$(document).ready(function play_default() {
-for (var i = 0; i < defaultmessage_list.length; i++) {
-    setTimeout(function (message) {
-    showtoast(message);
-    }, i * 1500, defaultmessage_list[i]);
-}
+document.addEventListener('DOMContentLoaded', function play_default() {
+  defaultmessage_list.forEach((message, i) => {
+    setTimeout(() => {
+      showtoast(message);
+    }, i * 1500);
+  });
 });

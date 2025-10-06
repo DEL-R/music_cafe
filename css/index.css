@@ -24,6 +24,13 @@ audio {
   display: none;
 }
 
+/* Hide the YouTube player iframe */
+#youtube-player {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+}
+
 a {
   color: var(--secondary-text-color);
   text-decoration: none;
@@ -103,6 +110,43 @@ a {
   font-size: 15px;
 }
 
+.song-title-text {
+  display: block; /* Assure qu'il prend sa propre ligne */
+  margin-top: 1rem;
+  font-family: var(--secondary-font-family);
+  font-size: 16px;
+  text-shadow: 1px 1px 3px #000;
+  transition: color 0.2s ease-in-out;
+}
+
+.song-title-text:hover {
+  text-decoration: underline;
+}
+
+/* Playlist Selector */
+#playlist-container {
+  margin-top: 1rem;
+}
+
+#playlist-selector {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: var(--secondary-text-color);
+  font-family: var(--secondary-font-family);
+  border: 1px solid var(--secondary-text-color);
+  border-radius: 4px;
+  padding: 2px 5px;
+  margin-left: 5px;
+}
+
+#playlist-selector:focus {
+  outline: none;
+  border-color: var(--primary-text-color);
+}
+
+#manage-playlists-btn {
+  margin-left: 10px;
+}
+
 /* Centerpiece Content */
 #centerpiece {
   position: relative;
@@ -148,36 +192,10 @@ a {
 #controls-icon > * { pointer-events: none; }
 
 #pause-icon,
-#play-icon {
+#play-icon {  
   position: absolute;
   height: 100%;
   width: 100%;
-  scale: 1.5;
-}
-
-#pause-icon { opacity: 0; }
-#pause-icon::before,
-#pause-icon::after {
-  /* Position */
-  display: inline-block;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  margin: auto;
-  content: '';
-
-  /* Color */
-  background-color: var(--primary-text-color);
-  
-  /* Size */
-  height: 100%;
-  aspect-ratio: 1 / 3;
-}
-#pause-icon::before { left: 10%; }
-#pause-icon::after { right: 10%; }
-
-#play-icon,
-#pause-icon {
   fill: var(--primary-text-color);
   opacity: 0;
   scale: 3;
@@ -239,8 +257,8 @@ a {
   right: 15px;
   opacity: 0;
   transition: all 0.4s ease-out;
-  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px); /* For Safari */
+  backdrop-filter: blur(10px);
 }
 
 /* Media query for smaller screens */
@@ -248,4 +266,263 @@ a {
   .toast {
     display: none; /* Hide the toast on smaller screens */
   }
+}
+
+/* Player Bar */
+#player-bar {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+
+  background-color: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 0.5rem 2rem;
+  border-radius: 50px;
+}
+
+#volume-controls {
+  display: flex;
+  align-items: center;
+}
+
+/* Remove the volume icons as the slider is explicit enough */
+#volume-controls svg {
+  display: none;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+  #player-bar {
+    width: 90%;
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+    justify-content: center;
+  }
+}
+
+/* Thumbnail Preview */
+#thumbnail-preview {
+  position: absolute;
+  bottom: calc(100% + 10px); /* 10px above the player bar */
+  left: 0;
+  
+  width: 100%;
+  aspect-ratio: 16 / 9; /* Maintain a 16:9 aspect ratio */
+  background-color: #000;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+#thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#player-bar:hover #thumbnail-preview {
+  opacity: 1;
+  visibility: visible;
+}
+
+#thumbnail-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  color: #fff;
+  font-family: var(--secondary-font-family);
+}
+
+#thumbnail-title {
+  margin: 0;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#thumbnail-link {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #ddd;
+  text-decoration: underline;
+}
+
+#thumbnail-link:hover {
+  color: #fff;
+}
+
+#thumbnail-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+}
+
+#channel-icon {
+  width: 20px;
+  height: 20px;
+  fill: #fff;
+  flex-shrink: 0; /* Prevents the icon from shrinking */
+}
+
+#thumbnail-author {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #fff;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#author-link-icon {
+  display: none; /* Hidden by default */
+  width: 16px;
+  height: 16px;
+  fill: #fff;
+  opacity: 0.7;
+  transition: opacity 0.2s ease-in-out;
+  margin-left: auto; /* Pushes it to the right */
+  padding-left: 0.5rem;
+}
+
+#author-link-icon:hover {
+  opacity: 1;
+}
+
+/* Playlist Management Modal */
+.modal-hidden {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: #1a1a1a;
+  color: var(--secondary-text-color);
+  font-family: var(--secondary-font-family);
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 800px;
+  border-radius: 8px;
+  position: relative;
+}
+
+#modal-close-btn {
+  color: #aaa;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#modal-close-btn:hover,
+#modal-close-btn:focus {
+  color: #fff;
+}
+
+.modal-body {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.modal-playlists-list, .modal-tracks-list {
+  flex: 1;
+}
+
+.modal-body h3 {
+  margin-top: 0;
+  color: var(--primary-text-color);
+}
+
+#modal-playlist-selector, #modal-tracks-ul {
+  width: 100%;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: var(--secondary-text-color);
+  border-radius: 4px;
+}
+
+#modal-playlist-selector {
+  padding: 5px;
+}
+
+#modal-tracks-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  height: 150px;
+  overflow-y: auto;
+}
+
+#modal-tracks-ul li {
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+}
+
+#modal-tracks-ul li:last-child {
+  border-bottom: none;
+}
+
+.track-remove-btn {
+  background: none;
+  border: none;
+  color: #ff5555;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.modal-playlist-actions, .modal-track-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modal-playlist-actions button, .modal-track-actions button {
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--secondary-font-family);
+}
+
+.modal-playlist-actions button:hover, .modal-track-actions button:hover {
+  background-color: #444;
 }
